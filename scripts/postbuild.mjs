@@ -19,7 +19,7 @@ if (!siteUrl) {
 // once the public address of the deployment is known at build time.
 const shell = await readFile(join(dist, 'index.html'), 'utf8');
 const withAbsoluteMeta = shell
-  .replaceAll('content="/og-image.png"', `content="${siteUrl}/og-image.png"`)
+  .replaceAll(/content="[^"]*\/og-image\.png"/g, `content="${siteUrl}/og-image.png"`)
   .replace('</head>', `  <meta property="og:url" content="${siteUrl}/" />\n  </head>`);
 await writeFile(join(dist, 'index.html'), withAbsoluteMeta, 'utf8');
 await writeFile(join(dist, '404.html'), withAbsoluteMeta, 'utf8');
@@ -51,7 +51,7 @@ const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 ${[...routes, ...workRoutes]
   .map(
     (route) => `  <url>
-    <loc>${siteUrl}${route}</loc>
+    <loc>${siteUrl}${route || '/'}</loc>
     <lastmod>${today}</lastmod>
   </url>`,
   )

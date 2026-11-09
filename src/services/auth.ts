@@ -2,9 +2,12 @@ import type { ActionCodeSettings, User } from 'firebase/auth';
 import { getFirebaseAuth } from '@/firebase/client';
 
 const siteOrigin = `${import.meta.env.VITE_SITE_URL ?? ''}`.replace(/\/$/, '');
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 export function actionHandlerUrl(): string {
-  const origin = siteOrigin || (typeof window !== 'undefined' ? window.location.origin : '');
+  const origin =
+    siteOrigin ||
+    (typeof window !== 'undefined' ? `${window.location.origin}${basePath}` : basePath);
   return `${origin}/auth-action`;
 }
 

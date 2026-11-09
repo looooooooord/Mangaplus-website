@@ -8,7 +8,12 @@ import { fileURLToPath, URL } from 'node:url';
  */
 const previewHost = process.env.PREVIEW_HOST;
 
+// GitHub Pages project sites are served from /<repository>/, so the base path
+// is supplied by the deployment environment while local development stays at /.
+const basePath = process.env.BASE_PATH ?? '/';
+
 export default defineConfig({
+  base: basePath,
   plugins: [react()],
   resolve: {
     alias: {

@@ -33,9 +33,11 @@ const Download = lazy(() => import('@/pages/Download'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const ErrorPage = lazy(() => import('@/pages/ErrorPage'));
 
+const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
+
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={routerBasename}>
       <ThemeProvider>
         <ToastProvider>
           <ConfirmProvider>

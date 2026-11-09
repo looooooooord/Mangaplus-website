@@ -4,6 +4,7 @@ import { faqs, features } from '@/data/faqs';
 import { site } from '@/data/site';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { formatCompact, timeAgo } from '@/lib/format';
+import { logoMarkUrl } from '@/lib/assets';
 import {
   getByType,
   getFeatured,
@@ -432,7 +433,7 @@ export default function Home() {
               <div className="app-cta__phone">
                 <span className="app-cta__phone-notch" />
                 <div className="app-cta__phone-screen">
-                  <img src="/assets/logo-mark.svg" alt="" width="44" height="44" />
+                  <img src={logoMarkUrl} alt="" width="44" height="44" />
                   <span className="app-cta__phone-title">MangaPlus</span>
                   <span className="app-cta__phone-line" />
                   <span className="app-cta__phone-line app-cta__phone-line--short" />

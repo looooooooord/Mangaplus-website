@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { logoMarkUrl } from '@/lib/assets';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -12,7 +13,7 @@ export function Logo({ size = 'md', showWordmark = true, to = '/', className = '
     <>
       <img
         className="logo__mark"
-        src="/assets/logo-mark.svg"
+        src={logoMarkUrl}
         alt={showWordmark ? '' : 'MangaPlus'}
         width="40"
         height="40"

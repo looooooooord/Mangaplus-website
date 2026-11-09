@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { Work } from '@/types';
+import { logoMarkUrl } from '@/lib/assets';
 
 interface WorkCoverProps {
   work: Work;
@@ -34,7 +35,7 @@ export function WorkCover({ work, className = '', showType = true }: WorkCoverPr
         <span className="work-cover__title">{work.title}</span>
         <span className="work-cover__author">{work.author}</span>
       </div>
-      <img className="work-cover__mark" src="/assets/logo-mark.svg" alt="" width="20" height="20" loading="lazy" />
+      <img className="work-cover__mark" src={logoMarkUrl} alt="" width="20" height="20" loading="lazy" />
       <span className="work-cover__gloss" />
     </div>
   );

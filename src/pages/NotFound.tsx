@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { logoMarkUrl } from '@/lib/assets';
 import { getFeatured } from '@/services/catalog';
 import { ButtonLink } from '@/components/Button';
 import { Icon } from '@/components/Icon';
@@ -58,7 +59,7 @@ export default function NotFound() {
             <span className="not-found__petal not-found__petal--one" />
             <span className="not-found__petal not-found__petal--two" />
             <span className="not-found__petal not-found__petal--three" />
-            <img src="/assets/logo-mark.svg" alt="" width="120" height="120" />
+            <img src={logoMarkUrl} alt="" width="120" height="120" />
           </div>
         </div>
 

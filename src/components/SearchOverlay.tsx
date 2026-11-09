@@ -5,6 +5,7 @@ import { useScrollLock } from '@/hooks/useScrollLock';
 import { listGenresInUse, queryCatalog, workPath } from '@/services/catalog';
 import { genreLabel } from '@/data/genres';
 import { readStoredJson, storageKeys, writeStoredJson } from '@/lib/storage';
+import { logoMarkUrl } from '@/lib/assets';
 import { Icon } from './Icon';
 import { StatusBadge, TypeBadge } from './Badge';
 import { EmptyState } from './EmptyState';
@@ -237,7 +238,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                     }}
                   >
                     <span className="search-result__cover">
-                      <img src="/assets/logo-mark.svg" alt="" width="18" height="18" loading="lazy" />
+                      <img src={logoMarkUrl} alt="" width="18" height="18" loading="lazy" />
                     </span>
                     <span className="search-result__body">
                       <span className="search-result__title">{work.title}</span>

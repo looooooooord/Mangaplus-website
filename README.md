@@ -148,14 +148,20 @@ SITE_URL="https://mangaplus.example" npm run build
 
 الموقع تطبيق صفحة واحدة (SPA)، ويحتاج إعادة كتابة كل المسارات إلى `index.html`:
 
-- **Netlify / Cloudflare Pages**: `public/_redirects` الموجود يغطي ذلك (`/* /index.html 200`).
-- **GitHub Pages**: يعمل عبر `404.html`، لكن النشر على مسار مشروع فرعي (`/repo/`) يتطلب ضبط `base` في `vite.config.ts` أو استخدام نطاق مخصص من الجذر.
+- **GitHub Pages (مُفعّل)**: ينشر `.github/workflows/deploy-pages.yml` الموقع تلقائياً عند كل دفعة إلى `main`، على المسار <https://looooooooord.github.io/Mangaplus-website/>. يستخدم الـworkflow `BASE_PATH=/Mangaplus-website/` و`SITE_URL` لضبط المسار الفرعي وخريطة الموقع وروابط OG. مصدر Pages في إعدادات المستودع هو **GitHub Actions**، لا فرع `gh-pages`.
+- **Netlify / Cloudflare Pages**: `public/_redirects` الموجود يغطي إعادة التوجيه (`/* /index.html 200`).
 - **Vercel**: أضف Rewrite إلى `/index.html` للمسارات غير الموجودة.
 
-يمكنك معاينة الإنتاج محلياً:
+للنشر على مسار فرعي يدوياً:
 
 ```bash
-npm run preview
+BASE_PATH=/Mangaplus-website/ SITE_URL=https://looooooooord.github.io/Mangaplus-website npm run build
+```
+
+يمكنك معاينة الإنتاج محلياً (مرّر `BASE_PATH` نفسه إن بنيت لمسار فرعي):
+
+```bash
+BASE_PATH=/Mangaplus-website/ npm run preview
 ```
 
 ## الاختبارات والتحقق

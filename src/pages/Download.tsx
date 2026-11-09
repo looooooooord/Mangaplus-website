@@ -4,6 +4,7 @@ import { ButtonAnchor, ButtonLink } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { WorkCover } from '@/components/WorkCover';
 import { getFeatured } from '@/services/catalog';
+import { logoMarkUrl } from '@/lib/assets';
 
 const appFeatures = [
   {
@@ -91,7 +92,7 @@ export default function Download() {
               <span className="download-phone__notch" />
               <div className="download-phone__screen">
                 <div className="download-phone__top">
-                  <img src="/assets/logo-mark.svg" alt="" width="30" height="30" />
+                  <img src={logoMarkUrl} alt="" width="30" height="30" />
                   <span>MangaPlus</span>
                 </div>
                 <div className="download-phone__covers">
