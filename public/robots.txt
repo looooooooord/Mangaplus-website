@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Private and session-specific pages
+Disallow: /account
+Disallow: /library
+Disallow: /auth-action
+Disallow: /reader/
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /search
+
+# A sitemap is generated at build time when SITE_URL is provided:
+# SITE_URL=https://your-domain npm run build

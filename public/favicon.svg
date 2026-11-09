@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F2F7FF"/>
+    </linearGradient>
+    <linearGradient id="p1" x1="34" y1="114" x2="96" y2="10" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B5CF0"/><stop offset="0.45" stop-color="#2C8BFF"/><stop offset="1" stop-color="#A9EEFF"/>
+    </linearGradient>
+    <linearGradient id="p2" x1="40" y1="116" x2="98" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0A3BD0"/><stop offset="0.55" stop-color="#1B5AFA"/><stop offset="1" stop-color="#3C86FF"/>
+    </linearGradient>
+    <linearGradient id="p3" x1="46" y1="118" x2="98" y2="92" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0A1C63"/><stop offset="1" stop-color="#1B3FAE"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <g transform="translate(12.8 12.8) scale(0.8)">
+    <path d="M32.5 112.5C24.8 75.2 38.2 30.4 84.6 8.2C90.8 41.1 81.6 81.4 32.5 112.5Z" fill="url(#p1)"/>
+    <path d="M38.2 115.6C44.4 92.6 58.4 71.4 96.6 58.6C100.5 81.9 89.6 99.8 38.2 115.6Z" fill="url(#p2)"/>
+    <path d="M46.4 118C56.2 105.4 72.4 96.8 96.4 93.6C92.2 106.4 73.4 118.4 46.4 118Z" fill="url(#p3)"/>
+  </g>
+</svg>
