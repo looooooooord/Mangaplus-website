@@ -10,6 +10,7 @@ import { AccountUnavailable } from '@/components/AccountUnavailable';
 import { AuthShell } from '@/components/AuthShell';
 import { Button } from '@/components/Button';
 import { FormField } from '@/components/FormField';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 import { Icon } from '@/components/Icon';
 
 function safeNext(value: string | null): string | null {
@@ -144,6 +145,19 @@ export default function Login() {
       <div className="auth-divider">
         <span>أو</span>
       </div>
+
+      <GoogleSignInButton
+        disabled={submitting}
+        onSuccess={(displayName) => {
+          toast({
+            tone: 'success',
+            title: `أهلاً بك${displayName ? `، ${displayName}` : ''}`,
+            description: 'تم تسجيل الدخول باستخدام Google.',
+          });
+          navigate(next ?? '/account', { replace: true });
+        }}
+        onError={(error) => setFormError(authErrorMessage(error))}
+      />
 
       <Link className="btn btn--outline btn--md btn--block" to="/signup">
         <span className="btn__label">إنشاء حساب جديد</span>

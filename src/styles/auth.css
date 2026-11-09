@@ -198,6 +198,45 @@
   background: var(--border);
 }
 
+.google-signin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 16px;
+  border: 1px solid #dadce0;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: #202124;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.12);
+  transition: background 0.18s var(--ease), box-shadow 0.18s var(--ease), border-color 0.18s var(--ease);
+}
+
+.google-signin:hover:not(:disabled) {
+  background: #f8fafd;
+  border-color: #c7c9cc;
+  box-shadow: 0 2px 5px rgba(60, 64, 67, 0.18);
+}
+
+.google-signin:active:not(:disabled) {
+  background: #f1f3f4;
+}
+
+.google-signin:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.google-signin__logo {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+}
+
 .auth-note {
   display: flex;
   align-items: flex-start;
@@ -483,5 +522,9 @@
 
   .account-unavailable {
     padding: 26px 18px;
+  }
+
+  .google-signin {
+    font-size: 0.86rem;
   }
 }

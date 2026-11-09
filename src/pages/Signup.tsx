@@ -10,6 +10,7 @@ import { AccountUnavailable } from '@/components/AccountUnavailable';
 import { AuthShell } from '@/components/AuthShell';
 import { Button } from '@/components/Button';
 import { FormField } from '@/components/FormField';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 import { Icon } from '@/components/Icon';
 import { PasswordChecklist, isPasswordValid, passwordStrength } from '@/components/PasswordChecklist';
 
@@ -219,9 +220,26 @@ export default function Signup() {
         </Button>
       </form>
 
+      <div className="auth-divider">
+        <span>أو</span>
+      </div>
+
+      <GoogleSignInButton
+        disabled={submitting}
+        onSuccess={(displayName) => {
+          toast({
+            tone: 'success',
+            title: `أهلاً بك${displayName ? `، ${displayName}` : ''}`,
+            description: 'تم إنشاء حسابك باستخدام Google.',
+          });
+          navigate('/account', { replace: true });
+        }}
+        onError={(error) => setFormError(authErrorMessage(error))}
+      />
+
       <p className="auth-note">
         <Icon name="mail" size={16} />
-        سنرسل رابط تحقق إلى بريدك بعد إنشاء الحساب. يُفتح الرابط على موقع MangaPlus مباشرة.
+        عند إنشاء الحساب بالبريد، سنرسل رابط تحقق يُفتح على موقع MangaPlus مباشرة.
       </p>
     </AuthShell>
   );

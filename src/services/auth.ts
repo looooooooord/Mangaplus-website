@@ -30,6 +30,15 @@ export async function signInWithEmail(email: string, password: string): Promise<
   return credential.user;
 }
 
+export async function signInWithGoogle(): Promise<User> {
+  const auth = await getFirebaseAuth();
+  const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  const credential = await signInWithPopup(auth, provider);
+  return credential.user;
+}
+
 export async function createAccount(email: string, password: string, displayName: string): Promise<User> {
   const auth = await getFirebaseAuth();
   const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
