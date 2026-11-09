@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { isFirebaseConfigured } from '@/firebase/config';
 import { authErrorMessage, isErrorCode } from '@/firebase/errors';
@@ -45,6 +45,9 @@ function LoadingCard() {
 
 export default function AuthAction() {
   const [params] = useSearchParams();
+  // Router navigation keeps the deployment base path (/Mangaplus-website) intact
+  // while dropping mode/oobCode from the address bar once the code is consumed.
+  const navigate = useNavigate();
   const mode = params.get('mode');
   const oobCode = params.get('oobCode');
   const linkError = params.get('error');
@@ -93,7 +96,7 @@ export default function AuthAction() {
           if (!active) return;
           await refreshUser();
           setPhase('verify-success');
-          window.history.replaceState({}, '', '/auth-action');
+          navigate('/auth-action', { replace: true });
         } catch (error) {
           if (!active) return;
           if (isErrorCode(error, 'auth/expired-action-code')) setPhase('expired');
@@ -143,7 +146,7 @@ export default function AuthAction() {
     try {
       await completePasswordReset(resetCode, password);
       setPhase('reset-success');
-      window.history.replaceState({}, '', '/auth-action');
+      navigate('/auth-action', { replace: true });
     } catch (error) {
       if (isErrorCode(error, 'auth/expired-action-code')) setPhase('expired');
       else if (isErrorCode(error, 'auth/invalid-action-code')) setPhase('invalid');

@@ -7,6 +7,10 @@ const dist = 'dist';
 // 404.html for unknown routes. Copying the SPA shell keeps deep links working.
 await copyFile(join(dist, 'index.html'), join(dist, '404.html'));
 
+// GitHub Pages serves this repository from the gh-pages branch, where Jekyll
+// processing must stay off so the hashed asset names are published untouched.
+await writeFile(join(dist, '.nojekyll'), '', 'utf8');
+
 const rawSiteUrl = process.env.SITE_URL ?? process.env.VITE_SITE_URL ?? '';
 const siteUrl = rawSiteUrl.trim().replace(/\/$/, '');
 

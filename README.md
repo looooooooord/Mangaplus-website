@@ -98,10 +98,10 @@ VITE_SITE_URL=
 
 1. من Firebase Console → **Project settings → Your apps** اختر تطبيق الويب أو أنشئ واحداً، ثم انسخ قيم `firebaseConfig` إلى متغيرات `VITE_FIREBASE_*`.
 2. في **Authentication → Sign-in method** فعّل **Email/Password**.
-3. في **Authentication → Settings → Authorized domains** أضف نطاق الموقع (مثلاً `mangaplus.example`)، وأضف `localhost` للتطوير إن لم يكن موجوداً.
+3. في **Authentication → Settings → Authorized domains** تأكد من وجود `looooooooord.github.io` (النطاق فقط، بلا مسار ولا `www`)، ومن وجود `localhost` للتطوير. بدونه ترفض Firebase روابط البريد التي تعود إلى الموقع وتظهر رسالة تعذّر.
 4. في **Authentication → Templates** افتح قالب **Email address verification** وقالب **Password reset**، ثم اضبط **Customize action URL** على:
    ```text
-   https://<نطاق-الموقع>/auth-action
+   https://looooooooord.github.io/Mangaplus-website/auth-action
    ```
    هذا يجعل روابط البريد تفتح صفحة الموقع المخصصة بدل الصفحة الافتراضية.
 5. أعد تشغيل خادم التطوير بعد تعديل `.env.local`.
@@ -148,15 +148,17 @@ SITE_URL="https://mangaplus.example" npm run build
 
 الموقع تطبيق صفحة واحدة (SPA)، ويحتاج إعادة كتابة كل المسارات إلى `index.html`:
 
-- **GitHub Pages (مُفعّل)**: ينشر `.github/workflows/deploy-pages.yml` الموقع تلقائياً عند كل دفعة إلى `main`، على المسار <https://looooooooord.github.io/Mangaplus-website/>. يستخدم الـworkflow `BASE_PATH=/Mangaplus-website/` و`SITE_URL` لضبط المسار الفرعي وخريطة الموقع وروابط OG. مصدر Pages في إعدادات المستودع هو **GitHub Actions**، لا فرع `gh-pages`.
+- **GitHub Pages (مُفعّل)**: ينشر `.github/workflows/deploy-pages.yml` الموقع تلقائياً عند كل دفعة إلى `main`، على المسار <https://looooooooord.github.io/Mangaplus-website/>. يبني الـworkflow الموقع بـ`BASE_PATH=/Mangaplus-website/` و`VITE_SITE_URL`، ثم يدفع ناتج `dist/` إلى فرع `gh-pages`، وهو مصدر النشر الحالي في إعدادات المستودع (**Deploy from a branch → gh-pages → /root**). قيم Firebase الستة تُقرأ من **Settings → Secrets and variables → Actions** بأسماء `VITE_FIREBASE_*`؛ بدونها يُبنى الموقع لكن تظهر صفحات الحساب بحالة «غير متاح حالياً».
 - **Netlify / Cloudflare Pages**: `public/_redirects` الموجود يغطي إعادة التوجيه (`/* /index.html 200`).
 - **Vercel**: أضف Rewrite إلى `/index.html` للمسارات غير الموجودة.
 
 للنشر على مسار فرعي يدوياً:
 
 ```bash
-BASE_PATH=/Mangaplus-website/ SITE_URL=https://looooooooord.github.io/Mangaplus-website npm run build
+BASE_PATH=/Mangaplus-website/ VITE_SITE_URL=https://looooooooord.github.io/Mangaplus-website npm run build
 ```
+
+يقبل `postbuild` المتغير `SITE_URL` أو `VITE_SITE_URL`، لكن كود الواجهة يقرأ `VITE_SITE_URL` فقط لأنه يبني منه رابط `/auth-action` الذي يُرسل إلى Firebase.
 
 يمكنك معاينة الإنتاج محلياً (مرّر `BASE_PATH` نفسه إن بنيت لمسار فرعي):
 
@@ -175,7 +177,7 @@ npm run build
 
 تم فحص الواجهة بصرياً على عرض 390 و768 و1440 بكسل، في الوضعين الفاتح والداكن، وتجربة: البحث والفلاتر، تفاصيل العمل، المفضلة والمتابعة، أوضاع القارئ وإعداداته، التنقل بين الفصول، حفظ التقدّم، صفحات المصادقة (حالة عدم التهيئة)، صفحة 404، ونافذة تأكيد مسح المكتبة.
 
-**لم يُختبر تسجيل الدخول الحقيقي** لأن المشروع لا يحتوي بيانات Firebase فعلية؛ هذا ما يجب التحقق منه أولاً بعد ضبط `.env.local`.
+**تم التحقق من اتصال المصادقة الحقيقي** بعد ربط المشروع بمشروع Firebase الخاص بالتطبيق: يظهر خطأ «البريد الإلكتروني أو كلمة المرور غير صحيحة» لبيانات دخول غير موجودة، وتُعالج روابط `/auth-action` غير الصالحة على المسار الفرعي. **لم يُختبر** إنشاء حساب فعلي ولا وصول رسالة التحقق أو إعادة التعيين إلى صندوق بريد، لأن ذلك يحتاج صندوق بريد اختبار.
 
 ## بنية المشروع
 
