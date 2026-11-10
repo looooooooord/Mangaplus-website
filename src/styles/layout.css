@@ -521,8 +521,14 @@
 .hero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(140deg, var(--hero-from) 0%, var(--hero-mid) 52%, var(--hero-to) 100%);
-  color: #fff;
+  background: linear-gradient(
+    140deg,
+    var(--spotlight-from) 0%,
+    var(--spotlight-mid) 52%,
+    var(--spotlight-to) 100%
+  );
+  color: var(--spotlight-text);
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
   padding-block: clamp(42px, 5vw, 76px) clamp(64px, 7vw, 104px);
   isolation: isolate;
 }
@@ -544,7 +550,7 @@
 .hero__orb--one {
   width: 440px;
   height: 440px;
-  background: #2d8cff;
+  background: var(--spotlight-orb-1);
   top: -180px;
   inset-inline-end: -60px;
 }
@@ -552,7 +558,7 @@
 .hero__orb--two {
   width: 360px;
   height: 360px;
-  background: #7fe6ff;
+  background: var(--spotlight-orb-2);
   bottom: -190px;
   inset-inline-start: 8%;
   opacity: 0.25;
@@ -562,8 +568,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+    linear-gradient(var(--spotlight-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--spotlight-grid) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: radial-gradient(circle at 30% 20%, #000 0%, transparent 72%);
 }
@@ -585,10 +591,10 @@
   gap: 9px;
   padding: 6px 14px 6px 10px;
   border-radius: var(--radius-pill);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--spotlight-eyebrow-border);
+  background: var(--spotlight-eyebrow-bg);
   font-size: 0.78rem;
-  color: rgba(231, 242, 255, 0.9);
+  color: var(--spotlight-eyebrow-text);
   margin-bottom: 20px;
   backdrop-filter: blur(6px);
 }
@@ -597,8 +603,18 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--cyan-300);
-  box-shadow: 0 0 0 4px rgba(127, 230, 255, 0.18);
+  background: var(--spotlight-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--spotlight-accent) 18%, transparent);
+}
+
+.hero .btn--glass {
+  background: var(--spotlight-glass-bg);
+  border-color: var(--spotlight-glass-border);
+  color: var(--spotlight-glass-text);
+}
+
+.hero .btn--glass:hover {
+  background: color-mix(in srgb, var(--spotlight-accent) 12%, var(--spotlight-glass-bg));
 }
 
 .hero__title {
@@ -611,14 +627,14 @@
 
 .hero__title-line {
   display: block;
-  background: linear-gradient(100deg, #ffffff 10%, #a9e9ff 70%, #7fe6ff 100%);
+  background: var(--spotlight-title);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .hero__text {
-  color: rgba(225, 238, 255, 0.78);
+  color: var(--spotlight-text-soft);
   font-size: clamp(0.98rem, 0.92rem + 0.3vw, 1.1rem);
   max-width: 52ch;
   line-height: 1.85;
@@ -644,11 +660,11 @@
   align-items: center;
   gap: 7px;
   font-size: 0.83rem;
-  color: rgba(219, 233, 255, 0.78);
+  color: var(--spotlight-text-soft);
 }
 
 .hero__points svg {
-  color: var(--cyan-300);
+  color: var(--spotlight-accent);
 }
 
 .hero__visual {
@@ -672,7 +688,7 @@
   aspect-ratio: 2 / 3;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 40px 60px -30px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.16);
+  box-shadow: 0 40px 60px -30px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--spotlight-cover-ring);
   transition: transform 0.5s var(--ease-out);
 }
 
@@ -719,10 +735,10 @@
   gap: 10px;
   padding: 10px 14px;
   border-radius: var(--radius-md);
-  background: rgba(10, 25, 60, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--spotlight-card-bg);
+  border: 1px solid var(--spotlight-card-border);
   backdrop-filter: blur(14px);
-  box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 20px 30px -20px rgba(0, 0, 0, 0.45);
   z-index: 4;
 }
 
@@ -730,14 +746,14 @@
   display: block;
   font-size: 0.82rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--spotlight-card-text);
   line-height: 1.4;
 }
 
 .hero__badge small {
   display: block;
   font-size: 0.7rem;
-  color: rgba(213, 231, 255, 0.7);
+  color: var(--spotlight-card-muted);
   line-height: 1.5;
 }
 
@@ -747,8 +763,8 @@
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: rgba(127, 230, 255, 0.16);
-  color: var(--cyan-300);
+  background: color-mix(in srgb, var(--spotlight-accent) 16%, transparent);
+  color: var(--spotlight-accent);
 }
 
 .hero__badge--top {

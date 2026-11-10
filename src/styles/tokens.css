@@ -71,6 +71,36 @@
   --overlay: rgba(6, 12, 28, 0.55);
   --glass: rgba(255, 255, 255, 0.12);
   --glass-border: rgba(255, 255, 255, 0.22);
+
+  /* Home spotlight (hero): light page, so the block is light too. */
+  --spotlight-from: #eaf3ff;
+  --spotlight-mid: #dcebff;
+  --spotlight-to: #cfe3ff;
+  --spotlight-text: #0a1733;
+  --spotlight-text-soft: rgba(15, 34, 71, 0.76);
+  --spotlight-eyebrow-text: #123a86;
+  --spotlight-eyebrow-bg: rgba(255, 255, 255, 0.7);
+  --spotlight-eyebrow-border: rgba(15, 85, 232, 0.16);
+  --spotlight-grid: rgba(15, 85, 232, 0.075);
+  --spotlight-orb-1: rgba(45, 140, 255, 0.4);
+  --spotlight-orb-2: rgba(127, 230, 255, 0.55);
+  --spotlight-title: linear-gradient(100deg, #0a1c4f 6%, #0f55e8 62%, #0e9fc4 100%);
+  --spotlight-accent: #0f55e8;
+  --spotlight-glass-bg: rgba(255, 255, 255, 0.75);
+  --spotlight-glass-border: rgba(15, 85, 232, 0.22);
+  --spotlight-glass-text: #0b3fbb;
+  --spotlight-cover-ring: rgba(15, 85, 232, 0.18);
+  --spotlight-card-bg: rgba(255, 255, 255, 0.82);
+  --spotlight-card-border: rgba(15, 85, 232, 0.14);
+  --spotlight-card-text: #0d1730;
+  --spotlight-card-muted: #4a5b7c;
+
+  /* Verified / developer identity. */
+  --gold: #9a6a08;
+  --gold-strong: #7a5205;
+  --gold-bg: #fdf3d8;
+  --gold-border: rgba(184, 134, 11, 0.35);
+  --gold-name: linear-gradient(100deg, #8a5c05 0%, #c08a10 55%, #d9a63a 100%);
 }
 
 [data-theme='dark'] {
@@ -104,6 +134,36 @@
   --overlay: rgba(2, 6, 16, 0.72);
   --glass: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.16);
+
+  /* Home spotlight (hero): dark page, so the block stays deep navy. */
+  --spotlight-from: #061a4a;
+  --spotlight-mid: #0b2f86;
+  --spotlight-to: #0f55e8;
+  --spotlight-text: #ffffff;
+  --spotlight-text-soft: rgba(225, 238, 255, 0.78);
+  --spotlight-eyebrow-text: rgba(231, 242, 255, 0.9);
+  --spotlight-eyebrow-bg: rgba(255, 255, 255, 0.08);
+  --spotlight-eyebrow-border: rgba(255, 255, 255, 0.18);
+  --spotlight-grid: rgba(255, 255, 255, 0.055);
+  --spotlight-orb-1: #2d8cff;
+  --spotlight-orb-2: #7fe6ff;
+  --spotlight-title: linear-gradient(100deg, #ffffff 10%, #a9e9ff 70%, #7fe6ff 100%);
+  --spotlight-accent: #7fe6ff;
+  --spotlight-glass-bg: rgba(255, 255, 255, 0.12);
+  --spotlight-glass-border: rgba(255, 255, 255, 0.24);
+  --spotlight-glass-text: #ffffff;
+  --spotlight-cover-ring: rgba(255, 255, 255, 0.16);
+  --spotlight-card-bg: rgba(10, 25, 60, 0.55);
+  --spotlight-card-border: rgba(255, 255, 255, 0.18);
+  --spotlight-card-text: #ffffff;
+  --spotlight-card-muted: rgba(213, 231, 255, 0.7);
+
+  /* Verified / developer identity. */
+  --gold: #f0c04d;
+  --gold-strong: #ffd977;
+  --gold-bg: #2c2210;
+  --gold-border: rgba(240, 192, 77, 0.32);
+  --gold-name: linear-gradient(100deg, #ffe6a6 0%, #f0c04d 55%, #d9a233 100%);
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 16px 32px -16px rgba(0, 0, 0, 0.65), 0 2px 6px rgba(0, 0, 0, 0.3);

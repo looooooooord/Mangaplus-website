@@ -125,6 +125,38 @@ export async function updateDisplayName(displayName: string): Promise<void> {
   await updateProfile(user, { displayName: displayName.trim() });
 }
 
+/** True when the account can sign in with an email and a password. */
+export function hasPasswordProvider(user: User): boolean {
+  return user.providerData.some((provider) => provider.providerId === 'password');
+}
+
+/**
+ * Changes the password after re-authenticating with the current one, which
+ * Firebase requires before any sensitive account change.
+ */
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  const auth = await getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user?.email) throw new Error('auth/no-current-user');
+  const { EmailAuthProvider, reauthenticateWithCredential, updatePassword } = await import(
+    'firebase/auth'
+  );
+  await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, currentPassword));
+  await updatePassword(user, newPassword);
+}
+
+/**
+ * Gives a password to an account created with Google, so it can also sign in
+ * with the same email address and a password.
+ */
+export async function setPassword(newPassword: string): Promise<void> {
+  const auth = await getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user?.email) throw new Error('auth/no-current-user');
+  const { EmailAuthProvider, linkWithCredential } = await import('firebase/auth');
+  await linkWithCredential(user, EmailAuthProvider.credential(user.email, newPassword));
+}
+
 /** Stores a photo URL on the account so it follows the user across devices. */
 export async function updatePhotoUrl(photoURL: string): Promise<void> {
   const auth = await getFirebaseAuth();

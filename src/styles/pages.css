@@ -1652,6 +1652,88 @@
   max-width: 52ch;
 }
 
+/* Gold name for a verified account. */
+.name--gold {
+  background: var(--gold-name);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.value--gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--gold-strong);
+  font-weight: 700;
+}
+
+/* One form for the picture, the name and the profile details. */
+.profile-edit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.profile-edit__photo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.profile-edit__photo .profile-photo__actions {
+  margin-bottom: 4px;
+}
+
+.profile-edit__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.profile-edit__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.profile-edit__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.panel__head {
+  margin-bottom: 4px;
+}
+
+.panel__head .panel__text {
+  margin-top: 4px;
+}
+
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.password-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.profile-card__badges .badge + .badge {
+  margin-inline-start: 6px;
+}
+
 .verify-panel {
   border-color: var(--warning);
   background: var(--warning-bg);
@@ -3127,6 +3209,15 @@
   }
 
   .info-list--two {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-edit {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-edit__grid,
+  .password-form__grid {
     grid-template-columns: 1fr;
   }
 

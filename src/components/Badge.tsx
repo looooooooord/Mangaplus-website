@@ -35,7 +35,7 @@ export function Badge({
   className = '',
 }: {
   children: ReactNode;
-  tone?: 'neutral' | 'brand' | 'success' | 'warning' | 'danger';
+  tone?: 'neutral' | 'brand' | 'success' | 'warning' | 'danger' | 'gold' | 'dev';
   className?: string;
 }) {
   return <span className={`badge badge--${tone} ${className}`.trim()}>{children}</span>;
