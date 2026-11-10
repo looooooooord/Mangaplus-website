@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+Disallow: /account
+Disallow: /library
+Disallow: /auth-action
+Disallow: /reader/
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /search
+
+Sitemap: https://looooooooord.github.io/Mangaplus-website/sitemap.xml

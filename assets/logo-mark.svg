@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="MangaPlus">
+  <defs>
+    <linearGradient id="mpPetals" x1="36" y1="110" x2="94" y2="12" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B5CF0"/>
+      <stop offset="0.45" stop-color="#2E8CFF"/>
+      <stop offset="1" stop-color="#ACEEFF"/>
+    </linearGradient>
+    <linearGradient id="mpPetalMid" x1="40" y1="114" x2="104" y2="55" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0C41D8"/>
+      <stop offset="0.6" stop-color="#1B5CFA"/>
+      <stop offset="1" stop-color="#3E88FF"/>
+    </linearGradient>
+    <linearGradient id="mpPetalDark" x1="46" y1="117" x2="100" y2="85" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#091A5C"/>
+      <stop offset="1" stop-color="#1B3FAE"/>
+    </linearGradient>
+  </defs>
+  <path d="M33 111C24 70 38 28 82 9C101 40 100 70 66 92C54 100 42 107 33 111Z" fill="url(#mpPetals)"/>
+  <path d="M38 114C48 96 68 70 103 53C111 74 96 96 62 108C52 111 44 113 38 114Z" fill="url(#mpPetalMid)"/>
+  <path d="M44 117C62 104 80 92 99 84C102 96 86 108 66 114C56 117 49 118 44 117Z" fill="url(#mpPetalDark)"/>
+</svg>
