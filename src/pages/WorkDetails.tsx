@@ -4,7 +4,7 @@ import { useLibrary } from '@/contexts/LibraryContext';
 import { useToast } from '@/contexts/ToastContext';
 import { genreLabel } from '@/data/genres';
 import { usePageMeta } from '@/hooks/usePageMeta';
-import { formatCompact, formatDate, formatPercent, timeAgo } from '@/lib/format';
+import { formatDate, formatPercent, timeAgo } from '@/lib/format';
 import {
   getRelated,
   getWorkById,
@@ -150,10 +150,6 @@ export default function WorkDetails({ type }: WorkDetailsProps) {
                 <span className="detail-hero__stat-label">{work.rating.toFixed(1)} من 5</span>
               </span>
               <span className="detail-hero__divider" aria-hidden="true" />
-              <span className="detail-hero__stat">
-                <Icon name="library" size={16} />
-                {formatCompact(work.readers)} قارئ
-              </span>
               <span className="detail-hero__stat">
                 <Icon name="layers" size={16} />
                 {work.chapters.length} فصلاً
@@ -340,10 +336,6 @@ export default function WorkDetails({ type }: WorkDetailsProps) {
                 <div>
                   <dt>التقييم</dt>
                   <dd>{work.rating.toFixed(1)} / 5</dd>
-                </div>
-                <div>
-                  <dt>القراء</dt>
-                  <dd>{formatCompact(work.readers)}</dd>
                 </div>
               </dl>
             </div>

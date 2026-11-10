@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { initials } from '@/lib/format';
 
 interface AvatarProps {
@@ -8,19 +7,10 @@ interface AvatarProps {
 }
 
 export function Avatar({ name, photoUrl, size = 'md' }: AvatarProps) {
-  const [imageFailed, setImageFailed] = useState(false);
-
   return (
     <span className={`avatar avatar--${size}`}>
-      {photoUrl && !imageFailed ? (
-        <img
-          src={photoUrl}
-          alt=""
-          className="avatar__image"
-          loading="lazy"
-          referrerPolicy="no-referrer"
-          onError={() => setImageFailed(true)}
-        />
+      {photoUrl ? (
+        <img src={photoUrl} alt="" className="avatar__image" loading="lazy" referrerPolicy="no-referrer" />
       ) : (
         <span className="avatar__initials" aria-hidden="true">
           {initials(name)}

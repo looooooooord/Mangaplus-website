@@ -192,6 +192,7 @@
   inset-inline-end: 0;
   top: calc(100% + 10px);
   width: 250px;
+  max-width: calc(100vw - 24px);
   padding: 8px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -252,6 +253,18 @@
   color: var(--danger);
 }
 
+/* On phones the button sits in the middle of the header, so the panel is
+   anchored to the viewport instead of the button and never leaves the screen. */
+@media (max-width: 560px) {
+  .account-menu__panel {
+    position: fixed;
+    inset-inline: 12px;
+    top: calc(var(--header-height) - 6px);
+    width: auto;
+    max-width: none;
+  }
+}
+
 /* ---------- Mobile drawer ---------- */
 .drawer {
   position: fixed;
@@ -272,11 +285,9 @@
   position: relative;
   z-index: 1;
   width: min(360px, 90vw);
-  max-width: 100%;
   height: 100%;
-  margin-inline-start: auto;
   background: var(--surface);
-  border-inline-start: 1px solid var(--border);
+  border-inline-end: 1px solid var(--border);
   padding: 18px 18px 24px;
   display: flex;
   flex-direction: column;
@@ -302,17 +313,11 @@
   border: 1px solid var(--border);
 }
 
-.drawer__account > span {
+.drawer__account-body {
   display: flex;
   flex-direction: column;
   min-width: 0;
   flex: 1;
-}
-
-.drawer__account > svg {
-  color: var(--muted);
-  flex-shrink: 0;
-  transform: rotate(180deg);
 }
 
 .drawer__account-name {
@@ -388,7 +393,6 @@
   margin-inline-start: auto;
   color: var(--muted);
   opacity: 0.6;
-  transform: rotate(180deg);
 }
 
 .drawer__footer {
@@ -798,7 +802,28 @@
 
 @media (max-width: 720px) {
   .site-header__inner {
-    gap: 10px;
+    gap: 6px;
+  }
+
+  /* The header has to fit on a narrow screen: the account button keeps only the
+     avatar so the menu button is never pushed outside the viewport. */
+  .account-menu__name,
+  .account-menu__chevron {
+    display: none;
+  }
+
+  .account-menu__trigger {
+    padding: 3px;
+    gap: 0;
+    max-width: none;
+  }
+
+  .site-header__actions {
+    gap: 2px;
+  }
+
+  .search-trigger {
+    padding-inline: 0;
   }
 
   .logo__mark {

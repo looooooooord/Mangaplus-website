@@ -52,6 +52,15 @@ export function Header() {
         <div className="container site-header__inner">
           <Logo size="md" />
 
+          <button
+            type="button"
+            className="icon-btn menu-trigger"
+            onClick={() => setMenuOpen(true)}
+            aria-label="فتح قائمة التنقل"
+          >
+            <Icon name="menu" size={22} />
+          </button>
+
           <nav className="site-nav" aria-label="التنقل الرئيسي">
             {navItems.map((item) => (
               <NavLink
@@ -96,15 +105,6 @@ export function Header() {
                 </NavLink>
               </div>
             )}
-
-            <button
-              type="button"
-              className="icon-btn menu-trigger"
-              onClick={() => setMenuOpen(true)}
-              aria-label="فتح قائمة التنقل"
-            >
-              <Icon name="menu" size={22} />
-            </button>
           </div>
         </div>
       </header>

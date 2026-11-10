@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
@@ -7,8 +7,15 @@ import { useToast } from '@/contexts/ToastContext';
 import { useTheme, type Theme } from '@/contexts/ThemeContext';
 import { authErrorMessage } from '@/firebase/errors';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { useProfilePhoto } from '@/hooks/useProfilePhoto';
 import { formatDate, formatNumber } from '@/lib/format';
-import { reloadUser, sendVerificationEmail, updateDisplayName } from '@/services/auth';
+import { getLocalPhoto, readImageFile, setLocalPhoto } from '@/services/profilePhoto';
+import {
+  reloadUser,
+  sendVerificationEmail,
+  updateDisplayName,
+  updatePhotoUrl,
+} from '@/services/auth';
 import { Avatar } from '@/components/Avatar';
 import { Badge } from '@/components/Badge';
 import { Button, ButtonLink } from '@/components/Button';
@@ -28,9 +35,13 @@ export default function Account() {
   const confirm = useConfirm();
   const navigate = useNavigate();
 
+  const photoUrl = useProfilePhoto(user);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(user?.displayName ?? '');
   const [savingName, setSavingName] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoUrlValue, setPhotoUrlValue] = useState('');
+  const [savingPhotoUrl, setSavingPhotoUrl] = useState(false);
   const [sendingVerification, setSendingVerification] = useState(false);
   const [checkingVerification, setCheckingVerification] = useState(false);
 
@@ -43,6 +54,7 @@ export default function Account() {
   if (!user) return null;
 
   const displayName = user.displayName?.trim() || 'مستخدم MangaPlus';
+  const localPhoto = getLocalPhoto(user.uid);
   const counts = {
     favorites: state.favorites.length,
     following: state.follows.length,
@@ -66,6 +78,61 @@ export default function Account() {
       toast({ tone: 'error', title: 'تعذّر تحديث الاسم', description: authErrorMessage(error) });
     } finally {
       setSavingName(false);
+    }
+  };
+
+  const onPickPhoto = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setPhotoBusy(true);
+    try {
+      const dataUrl = await readImageFile(file);
+      setLocalPhoto(user.uid, dataUrl);
+      toast({ tone: 'success', title: 'تم تحديث صورة الملف الشخصي' });
+    } catch {
+      toast({
+        tone: 'error',
+        title: 'تعذّر استخدام هذه الصورة',
+        description: 'اختر صورة بصيغة JPG أو PNG ثم حاول مرة أخرى.',
+      });
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
+
+  const onRemovePhoto = async () => {
+    setPhotoBusy(true);
+    try {
+      setLocalPhoto(user.uid, null);
+      if (user.photoURL) await updatePhotoUrl('');
+      await refreshUser();
+      toast({ tone: 'success', title: 'تمت إزالة الصورة' });
+    } catch (error) {
+      toast({ tone: 'error', title: 'تعذّر إزالة الصورة', description: authErrorMessage(error) });
+    } finally {
+      setPhotoBusy(false);
+    }
+  };
+
+  const savePhotoUrl = async (event: FormEvent) => {
+    event.preventDefault();
+    const clean = photoUrlValue.trim();
+    if (clean && !/^https?:\/\/\S+$/i.test(clean)) {
+      toast({ tone: 'error', title: 'الرابط غير صحيح', description: 'استخدم رابطاً يبدأ بـ https://' });
+      return;
+    }
+    setSavingPhotoUrl(true);
+    try {
+      await updatePhotoUrl(clean);
+      setLocalPhoto(user.uid, null);
+      await refreshUser();
+      setPhotoUrlValue('');
+      toast({ tone: 'success', title: clean ? 'تم حفظ رابط الصورة' : 'تمت إزالة الصورة' });
+    } catch (error) {
+      toast({ tone: 'error', title: 'تعذّر حفظ الرابط', description: authErrorMessage(error) });
+    } finally {
+      setSavingPhotoUrl(false);
     }
   };
 
@@ -148,7 +215,7 @@ export default function Account() {
                 الملف الشخصي
               </h2>
               <div className="profile-card__top">
-                <Avatar name={displayName} photoUrl={user.photoURL} size="xl" />
+                <Avatar name={displayName} photoUrl={photoUrl} size="xl" />
                 <div className="profile-card__identity">
                   <h2 className="profile-card__name">{displayName}</h2>
                   <p className="profile-card__email" dir="ltr">
@@ -166,6 +233,60 @@ export default function Account() {
                     )}
                   </div>
                 </div>
+              </div>
+
+              <div className="profile-photo">
+                <div className="profile-photo__actions">
+                  <label className="btn btn--soft btn--sm profile-photo__pick">
+                    <Icon name={photoBusy ? 'refresh' : 'pen'} size={16} />
+                    <span className="btn__label">
+                      {photoBusy ? 'جارٍ تجهيز الصورة…' : 'اختيار صورة من الجهاز'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={onPickPhoto}
+                      disabled={photoBusy}
+                      hidden
+                    />
+                  </label>
+                  {localPhoto || user.photoURL ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      iconLeft="trash"
+                      onClick={onRemovePhoto}
+                      loading={photoBusy}
+                    >
+                      إزالة الصورة
+                    </Button>
+                  ) : null}
+                </div>
+
+                <form className="profile-photo__url" onSubmit={savePhotoUrl}>
+                  <label className="profile-card__label" htmlFor="profile-photo-url">
+                    أو رابط صورة
+                  </label>
+                  <div className="profile-photo__url-row">
+                    <input
+                      id="profile-photo-url"
+                      className="field__input"
+                      value={photoUrlValue}
+                      onChange={(event) => setPhotoUrlValue(event.target.value)}
+                      placeholder="https://example.com/photo.jpg"
+                      dir="ltr"
+                      autoComplete="url"
+                    />
+                    <Button type="submit" size="sm" loading={savingPhotoUrl}>
+                      حفظ
+                    </Button>
+                  </div>
+                </form>
+
+                <p className="profile-card__hint">
+                  الصورة المختارة من الجهاز تُحفظ في هذا المتصفح فقط، أما الرابط فيُحفظ في حسابك
+                  ويظهر على كل الأجهزة.
+                </p>
               </div>
 
               {editingName ? (

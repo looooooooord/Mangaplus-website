@@ -3,7 +3,7 @@ import { useLibrary } from '@/contexts/LibraryContext';
 import { faqs, features } from '@/data/faqs';
 import { site } from '@/data/site';
 import { usePageMeta } from '@/hooks/usePageMeta';
-import { formatCompact, timeAgo } from '@/lib/format';
+import { timeAgo } from '@/lib/format';
 import { logoMarkUrl } from '@/lib/assets';
 import {
   getByType,
@@ -227,7 +227,6 @@ export default function Home() {
                       <span className="rank-panel__rank">{index + 1}</span>
                       <span className="rank-panel__body">
                         <span className="rank-panel__title">{work.title}</span>
-                        <span className="rank-panel__meta">{formatCompact(work.readers)} قارئ</span>
                       </span>
                       <Rating value={work.rating} showValue={false} />
                     </Link>

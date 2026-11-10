@@ -1,4 +1,5 @@
 import type { ActionCodeSettings, User } from 'firebase/auth';
+import { isErrorCode } from '@/firebase/errors';
 import { getFirebaseAuth } from '@/firebase/client';
 
 const siteOrigin = `${import.meta.env.VITE_SITE_URL ?? ''}`.replace(/\/$/, '');
@@ -32,11 +33,23 @@ export async function signInWithEmail(email: string, password: string): Promise<
 
 export async function signInWithGoogle(): Promise<User> {
   const auth = await getFirebaseAuth();
-  const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
+  const { GoogleAuthProvider, signInWithPopup, signInWithRedirect } = await import('firebase/auth');
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
-  const credential = await signInWithPopup(auth, provider);
-  return credential.user;
+
+  try {
+    const credential = await signInWithPopup(auth, provider);
+    return credential.user;
+  } catch (error) {
+    // Popups are blocked in some in-app browsers; a full redirect also works and
+    // the auth state listener picks the session up when the user comes back.
+    if (
+      isErrorCode(error, 'auth/popup-blocked', 'auth/operation-not-supported-in-this-environment')
+    ) {
+      await signInWithRedirect(auth, provider);
+    }
+    throw error;
+  }
 }
 
 export async function createAccount(email: string, password: string, displayName: string): Promise<User> {
@@ -110,6 +123,15 @@ export async function updateDisplayName(displayName: string): Promise<void> {
   if (!user) throw new Error('auth/no-current-user');
   const { updateProfile } = await import('firebase/auth');
   await updateProfile(user, { displayName: displayName.trim() });
+}
+
+/** Stores a photo URL on the account so it follows the user across devices. */
+export async function updatePhotoUrl(photoURL: string): Promise<void> {
+  const auth = await getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user) throw new Error('auth/no-current-user');
+  const { updateProfile } = await import('firebase/auth');
+  await updateProfile(user, { photoURL: photoURL.trim() || null });
 }
 
 export async function subscribeToAuth(

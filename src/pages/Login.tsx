@@ -92,6 +92,12 @@ export default function Login() {
         </p>
       }
     >
+      <GoogleSignInButton next={next} />
+
+      <div className="auth-divider">
+        <span>أو بالبريد الإلكتروني</span>
+      </div>
+
       {formError ? (
         <div className="form-alert form-alert--error" role="alert">
           <Icon name="alert" size={18} />
@@ -145,19 +151,6 @@ export default function Login() {
       <div className="auth-divider">
         <span>أو</span>
       </div>
-
-      <GoogleSignInButton
-        disabled={submitting}
-        onSuccess={(displayName) => {
-          toast({
-            tone: 'success',
-            title: `أهلاً بك${displayName ? `، ${displayName}` : ''}`,
-            description: 'تم تسجيل الدخول باستخدام Google.',
-          });
-          navigate(next ?? '/account', { replace: true });
-        }}
-        onError={(error) => setFormError(authErrorMessage(error))}
-      />
 
       <Link className="btn btn--outline btn--md btn--block" to="/signup">
         <span className="btn__label">إنشاء حساب جديد</span>

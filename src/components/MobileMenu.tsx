@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { useProfilePhoto } from '@/hooks/useProfilePhoto';
 import { Avatar } from './Avatar';
 import { Icon } from './Icon';
 import { Logo } from './Logo';
@@ -25,6 +26,7 @@ const links = [
 
 export function MobileMenu({ open, onClose, onOpenSearch }: MobileMenuProps) {
   const { user } = useAuth();
+  const photoUrl = useProfilePhoto(user);
   const [term, setTerm] = useState('');
   const navigate = useNavigate();
 
@@ -70,8 +72,8 @@ export function MobileMenu({ open, onClose, onOpenSearch }: MobileMenuProps) {
 
         {user ? (
           <NavLink to="/account" className="drawer__account" onClick={onClose}>
-            <Avatar name={user.displayName} photoUrl={user.photoURL} size="md" />
-            <span>
+            <Avatar name={user.displayName} photoUrl={photoUrl} size="md" />
+            <span className="drawer__account-body">
               <span className="drawer__account-name">{user.displayName?.trim() || 'حسابي'}</span>
               <span className="drawer__account-email" dir="ltr">
                 {user.email}

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import type { Work } from '@/types';
 import { genreLabel } from '@/data/genres';
 import { workPath } from '@/services/catalog';
-import { formatCompact, formatPercent } from '@/lib/format';
+import { formatPercent } from '@/lib/format';
 import { FavoriteButton } from './FavoriteButton';
 import { Rating } from './Rating';
 import { WorkCover } from './WorkCover';
@@ -40,7 +40,6 @@ export function WorkCard({ work, progress }: WorkCardProps) {
           </p>
           <div className="work-card__stats">
             <Rating value={work.rating} />
-            <span className="work-card__readers">{formatCompact(work.readers)} قارئ</span>
           </div>
         </div>
       </Link>

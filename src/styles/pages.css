@@ -1610,6 +1610,48 @@
   margin-top: 4px;
 }
 
+.profile-photo {
+  display: grid;
+  gap: 12px;
+  margin-top: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.profile-photo__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-photo__pick {
+  cursor: pointer;
+}
+
+.profile-photo__url {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 400px;
+}
+
+.profile-photo__url-row {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-photo__url-row .field__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-card__hint {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.75;
+  max-width: 52ch;
+}
+
 .verify-panel {
   border-color: var(--warning);
   background: var(--warning-bg);

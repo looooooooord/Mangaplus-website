@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { useToast } from '@/contexts/ToastContext';
 import { authErrorMessage } from '@/firebase/errors';
+import { useProfilePhoto } from '@/hooks/useProfilePhoto';
 import { Avatar } from './Avatar';
 import { Icon } from './Icon';
 
@@ -15,6 +16,7 @@ export function AccountMenu() {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const photoUrl = useProfilePhoto(user);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -67,7 +69,7 @@ export function AccountMenu() {
         aria-haspopup="menu"
         aria-label="قائمة الحساب"
       >
-        <Avatar name={user.displayName} photoUrl={user.photoURL} size="sm" />
+        <Avatar name={user.displayName} photoUrl={photoUrl} size="sm" />
         <span className="account-menu__name">{name}</span>
         <Icon name="chevronDown" size={15} className="account-menu__chevron" />
       </button>
@@ -75,7 +77,7 @@ export function AccountMenu() {
       {open ? (
         <div className="account-menu__panel" role="menu" aria-label="حساب MangaPlus">
           <div className="account-menu__head">
-            <Avatar name={user.displayName} photoUrl={user.photoURL} size="md" />
+            <Avatar name={user.displayName} photoUrl={photoUrl} size="md" />
             <div>
               <p className="account-menu__title">{name}</p>
               <p className="account-menu__email" dir="ltr">
