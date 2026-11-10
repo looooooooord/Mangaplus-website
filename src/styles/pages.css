@@ -1570,6 +1570,16 @@
   margin-bottom: 18px;
 }
 
+/* زر «تعديل» الوحيد في العرض الافتراضي؛ بقية الحقول تظهر بعده فقط. */
+.profile-card__actions {
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+
+.profile-card__top + .profile-card__hint {
+  margin-top: 10px;
+}
+
 .profile-card__identity {
   min-width: 0;
 }

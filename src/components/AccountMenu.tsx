@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/ProfileContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { useToast } from '@/contexts/ToastContext';
 import { authErrorMessage } from '@/firebase/errors';
@@ -10,6 +11,7 @@ import { Icon } from './Icon';
 
 export function AccountMenu() {
   const { user, logout } = useAuth();
+  const { profile } = useProfile();
   const { toast } = useToast();
   const confirm = useConfirm();
   const navigate = useNavigate();
@@ -36,7 +38,7 @@ export function AccountMenu() {
 
   if (!user) return null;
 
-  const name = user.displayName?.trim() || 'حسابي';
+  const name = profile?.displayName?.trim() || user.displayName?.trim() || 'حسابي';
 
   const onLogout = async () => {
     setOpen(false);

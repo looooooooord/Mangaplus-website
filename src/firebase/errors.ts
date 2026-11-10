@@ -31,6 +31,13 @@ const messages: Record<string, string> = {
   'auth/multi-factor-auth-required': 'يتطلب الحساب خطوة تحقق إضافية.',
   'auth/unauthorized-continue-uri': 'تعذّر إكمال العملية. حاول لاحقاً.',
   'auth/invalid-continue-uri': 'تعذّر إكمال العملية. حاول لاحقاً.',
+  'permission-denied': 'لا تملك صلاحية الوصول إلى بيانات هذا الحساب.',
+  'firestore/permission-denied': 'لا تملك صلاحية الوصول إلى بيانات هذا الحساب.',
+  unavailable: 'تعذّر الاتصال بخدمة بيانات الحساب. تحقق من اتصالك وحاول مجدداً.',
+  'failed-precondition': 'خدمة بيانات الحساب غير مهيأة بعد. حاول لاحقاً.',
+  'profile/verification-required': 'أكّد بريدك الإلكتروني أولاً لتتمكن من تعديل بيانات حسابك.',
+  'profile/photo-too-large': 'الصورة كبيرة جداً. اختر صورة أصغر ثم حاول مجدداً.',
+  'account-service-unavailable': 'خدمة الحساب غير متاحة حالياً. حاول لاحقاً.',
 };
 
 const fallbackMessage = 'تعذّر إكمال العملية. حاول مرة أخرى.';

@@ -3,20 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConfirm } from '@/contexts/ConfirmContext';
 import { useLibrary } from '@/contexts/LibraryContext';
+import { useProfile } from '@/contexts/ProfileContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useTheme, type Theme } from '@/contexts/ThemeContext';
-import {
-  COUNTRY_OPTIONS,
-  GENDER_OPTIONS,
-  optionLabel,
-} from '@/data/profileOptions';
 import { authErrorMessage } from '@/firebase/errors';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { useProfilePhoto } from '@/hooks/useProfilePhoto';
 import { formatDate, formatNumber } from '@/lib/format';
+import { readImageFile } from '@/lib/image';
 import { isDeveloperEmail } from '@/lib/roles';
-import { getAccountDetails, setAccountDetails } from '@/services/accountProfile';
-import { getLocalPhoto, readImageFile, setLocalPhoto } from '@/services/profilePhoto';
 import {
   changePassword,
   hasPasswordProvider,
@@ -26,22 +21,39 @@ import {
   updateDisplayName,
   updatePhotoUrl,
 } from '@/services/auth';
+import { saveProfile, type ProfilePatch } from '@/services/userProfile';
 import { Avatar } from '@/components/Avatar';
 import { Badge } from '@/components/Badge';
 import { Button, ButtonLink } from '@/components/Button';
 import { FormField } from '@/components/FormField';
 import { Icon } from '@/components/Icon';
 import { PasswordChecklist, isPasswordValid } from '@/components/PasswordChecklist';
-import { Select } from '@/components/Select';
+import { COUNTRY_OPTIONS, GENDER_OPTIONS } from '@/data/profileOptions';
 
-function safeDate(value: string | undefined): string {
+function safeDate(value: string | null | undefined): string {
   if (!value) return '—';
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? '—' : formatDate(date.toISOString());
 }
 
+/** الدولة كما يحفظها التطبيق: اسم عربي جاهز، وإلا الاسم من رمز الدولة. */
+function countryLabel(code: string, name: string): string {
+  if (name.trim()) return name.trim();
+  const normalized = code.trim().toLowerCase();
+  if (!normalized) return 'غير محدد';
+  return COUNTRY_OPTIONS.find((option) => option.value === normalized)?.label ?? code.trim();
+}
+
+function genderLabel(value: string): string {
+  const normalized = value.trim();
+  if (!normalized) return 'غير محدد';
+  const known = GENDER_OPTIONS.find((option) => option.value === normalized);
+  return known ? known.label : normalized;
+}
+
 export default function Account() {
   const { user, refreshUser, logout } = useAuth();
+  const { profile, loading: profileLoading, error: profileError } = useProfile();
   const { state } = useLibrary();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
@@ -49,15 +61,13 @@ export default function Account() {
   const navigate = useNavigate();
 
   const photoUrl = useProfilePhoto(user);
+  const [editing, setEditing] = useState(false);
   const [nameValue, setNameValue] = useState(user?.displayName ?? '');
-  const [photoUrlValue, setPhotoUrlValue] = useState(user?.photoURL ?? '');
+  const [photoUrlValue, setPhotoUrlValue] = useState('');
   /** undefined = لا تغيير، null = إزالة الصورة، نص = صورة جديدة من الجهاز. */
   const [pendingPhoto, setPendingPhoto] = useState<string | null | undefined>(undefined);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
-  const [details, setDetails] = useState(() =>
-    user ? getAccountDetails(user.uid) : { country: '', gender: '' },
-  );
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -73,10 +83,13 @@ export default function Account() {
 
   if (!user) return null;
 
-  const displayName = user.displayName?.trim() || 'مستخدم MangaPlus';
-  const localPhoto = getLocalPhoto(user.uid);
-  const verified = user.emailVerified;
-  const developer = isDeveloperEmail(user.email);
+  const displayName =
+    profile?.displayName?.trim() || user.displayName?.trim() || 'مستخدم MangaPlus';
+  const verified = profile?.isVerified === true;
+  // Firebase Auth هو المصدر الموثوق لتأكيد البريد؛ حقل المستند قد يكون قديماً.
+  const emailVerified = user.emailVerified;
+  const developer = profile?.isOfficialDeveloper === true || isDeveloperEmail(user.email);
+  const canEdit = user.emailVerified || user.isAnonymous;
   const canSignInWithPassword = hasPasswordProvider(user);
   const signInMethod = canSignInWithPassword
     ? 'البريد الإلكتروني وكلمة المرور'
@@ -89,6 +102,30 @@ export default function Account() {
     favorites: state.favorites.length,
     following: state.follows.length,
     reading: Object.keys(state.progress).length,
+  };
+
+  const startEditing = () => {
+    if (!canEdit) {
+      toast({
+        tone: 'error',
+        title: 'أكّد بريدك الإلكتروني أولاً',
+        description: 'أرسلنا رسالة التحقق إلى بريدك؛ بعد التأكيد يمكنك تعديل اسمك وصورتك.',
+      });
+      return;
+    }
+    setNameValue(profile?.displayName?.trim() || user.displayName || '');
+    setPhotoUrlValue(profile?.photoUrl ?? '');
+    setPendingPhoto(undefined);
+    setEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setEditing(false);
+    setPendingPhoto(undefined);
+    setPhotoUrlValue('');
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
   };
 
   const onPickPhoto = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -116,7 +153,7 @@ export default function Account() {
     setPhotoUrlValue('');
   };
 
-  const saveProfile = async (event: FormEvent) => {
+  const saveProfileChanges = async (event: FormEvent) => {
     event.preventDefault();
     const cleanName = nameValue.trim();
     const cleanUrl = photoUrlValue.trim();
@@ -130,26 +167,24 @@ export default function Account() {
       return;
     }
 
+    const patch: ProfilePatch = {};
+    if (cleanName !== (profile?.displayName ?? user.displayName ?? '').trim()) {
+      patch.displayName = cleanName;
+    }
+    if (pendingPhoto !== undefined) {
+      patch.photoData = pendingPhoto ?? '';
+    } else if (cleanUrl !== (profile?.photoUrl ?? '')) {
+      patch.photoUrl = cleanUrl;
+    }
+
     setSavingProfile(true);
     try {
-      if (cleanName !== (user.displayName ?? '').trim()) {
-        await updateDisplayName(cleanName);
-      }
-
-      if (cleanUrl) {
-        if (cleanUrl !== (user.photoURL ?? '')) await updatePhotoUrl(cleanUrl);
-        if (pendingPhoto !== undefined) setLocalPhoto(user.uid, null);
-        setPendingPhoto(undefined);
-      } else if (pendingPhoto !== undefined) {
-        setLocalPhoto(user.uid, pendingPhoto);
-        if (!pendingPhoto && user.photoURL) await updatePhotoUrl('');
-        setPendingPhoto(undefined);
-      } else if (user.photoURL) {
-        await updatePhotoUrl('');
-      }
-
-      setAccountDetails(user.uid, details);
+      await saveProfile(user, patch);
+      if (patch.displayName) await updateDisplayName(patch.displayName);
+      if (patch.photoData === '') await updatePhotoUrl('');
       await refreshUser();
+      setEditing(false);
+      setPendingPhoto(undefined);
       toast({ tone: 'success', title: 'تم حفظ بيانات الحساب' });
     } catch (error) {
       toast({ tone: 'error', title: 'تعذّر حفظ التعديلات', description: authErrorMessage(error) });
@@ -273,7 +308,7 @@ export default function Account() {
             <p className="eyebrow">حساب MangaPlus</p>
             <h1 className="page__title">حسابي</h1>
             <p className="page__lead">
-              حسابك هنا هو نفسه حساب MangaPlus في التطبيق، بنفس البريد وكلمة المرور.
+              هذا هو حسابك نفسه في تطبيق MangaPlus: الاسم والصورة والبيانات تظهر في الاثنين.
             </p>
           </div>
         </header>
@@ -298,6 +333,10 @@ export default function Account() {
                       <Badge tone="gold">
                         <Icon name="checkCircle" size={13} /> حساب موثّق
                       </Badge>
+                    ) : emailVerified ? (
+                      <Badge tone="success">
+                        <Icon name="check" size={13} /> البريد مؤكّد
+                      </Badge>
                     ) : (
                       <Badge tone="warning">
                         <Icon name="alert" size={13} /> البريد غير موثّق
@@ -310,108 +349,161 @@ export default function Account() {
                     ) : null}
                   </div>
                 </div>
+                {!editing ? (
+                  <div className="profile-card__actions">
+                    <Button
+                      type="button"
+                      variant="soft"
+                      size="sm"
+                      iconLeft="pen"
+                      onClick={startEditing}
+                    >
+                      تعديل
+                    </Button>
+                  </div>
+                ) : null}
               </div>
 
-              <form className="profile-edit" onSubmit={saveProfile}>
-                <div className="profile-edit__photo">
-                  <p className="profile-card__label">صورة الملف الشخصي</p>
-                  <div className="profile-photo__actions">
-                    <label className="btn btn--soft btn--sm profile-photo__pick">
-                      <Icon name={photoBusy ? 'refresh' : 'pen'} size={16} />
-                      <span className="btn__label">
-                        {photoBusy ? 'جارٍ تجهيز الصورة…' : hasPhoto ? 'تغيير الصورة' : 'اختيار صورة'}
-                      </span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={onPickPhoto}
-                        disabled={photoBusy}
-                        hidden
-                      />
+              {editing ? (
+                <form className="profile-edit" onSubmit={saveProfileChanges}>
+                  <div className="profile-edit__photo">
+                    <p className="profile-card__label">صورة الملف الشخصي</p>
+                    <div className="profile-photo__actions">
+                      <label className="btn btn--soft btn--sm profile-photo__pick">
+                        <Icon name={photoBusy ? 'refresh' : 'pen'} size={16} />
+                        <span className="btn__label">
+                          {photoBusy ? 'جارٍ تجهيز الصورة…' : hasPhoto ? 'تغيير الصورة' : 'اختيار صورة'}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={onPickPhoto}
+                          disabled={photoBusy}
+                          hidden
+                        />
+                      </label>
+                      {hasPhoto ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          iconLeft="trash"
+                          onClick={onRemovePhoto}
+                        >
+                          إزالة الصورة
+                        </Button>
+                      ) : null}
+                    </div>
+
+                    <label className="profile-card__label" htmlFor="profile-photo-url">
+                      أو رابط صورة
                     </label>
-                    {hasPhoto ? (
+                    <input
+                      id="profile-photo-url"
+                      className="field__input"
+                      value={photoUrlValue}
+                      onChange={(event) => setPhotoUrlValue(event.target.value)}
+                      placeholder="https://example.com/photo.jpg"
+                      dir="ltr"
+                      autoComplete="url"
+                    />
+                    <p className="profile-card__hint">
+                      الصورة تُحفظ في حسابك وتظهر في الموقع والتطبيق على كل الأجهزة.
+                    </p>
+                  </div>
+
+                  <div className="profile-edit__fields">
+                    <FormField
+                      label="الاسم الظاهر"
+                      icon="user"
+                      value={nameValue}
+                      onChange={(event) => setNameValue(event.target.value)}
+                      maxLength={40}
+                      autoComplete="nickname"
+                      hint="هذا الاسم يظهر في الموقع والتطبيق معاً."
+                    />
+
+                    <div className="profile-edit__actions">
+                      <Button type="submit" iconLeft="check" loading={savingProfile}>
+                        حفظ التغييرات
+                      </Button>
                       <Button
                         type="button"
                         variant="ghost"
-                        size="sm"
-                        iconLeft="trash"
-                        onClick={onRemovePhoto}
+                        onClick={cancelEditing}
+                        disabled={savingProfile}
                       >
-                        إزالة الصورة
+                        إلغاء
                       </Button>
-                    ) : null}
+                    </div>
                   </div>
+                </form>
+              ) : null}
 
-                  <label className="profile-card__label" htmlFor="profile-photo-url">
-                    أو رابط صورة
-                  </label>
-                  <input
-                    id="profile-photo-url"
-                    className="field__input"
-                    value={photoUrlValue}
-                    onChange={(event) => setPhotoUrlValue(event.target.value)}
-                    placeholder="https://example.com/photo.jpg"
-                    dir="ltr"
-                    autoComplete="url"
-                  />
-                  <p className="profile-card__hint">
-                    الصورة المختارة من الجهاز تُحفظ في هذا المتصفح، والرابط يُحفظ في حسابك ويظهر على
-                    كل الأجهزة.
+              {profileLoading ? (
+                <p className="profile-card__hint">جارٍ تحميل بيانات الحساب من Firebase…</p>
+              ) : null}
+              {profileError ? (
+                <p className="profile-card__hint">تعذّر تحميل بيانات الحساب: {authErrorMessage(profileError)}</p>
+              ) : null}
+            </section>
+
+            {editing ? (
+              <section className="panel" aria-labelledby="password-title">
+                <div className="panel__head">
+                  <h2 className="panel__title panel__title--sm" id="password-title">
+                    {canSignInWithPassword ? 'كلمة المرور' : 'تعيين كلمة مرور'}
+                  </h2>
+                  <p className="panel__text">
+                    {canSignInWithPassword
+                      ? 'غيّر كلمة مرور حسابك. ستحتاج كلمة المرور الحالية لتأكيد التغيير.'
+                      : 'حسابك يعمل عبر Google. يمكنك إضافة كلمة مرور للدخول بالبريد نفسه على أي جهاز.'}
                   </p>
                 </div>
 
-                <div className="profile-edit__fields">
-                  <FormField
-                    label="اسم المستخدم"
-                    icon="user"
-                    value={nameValue}
-                    onChange={(event) => setNameValue(event.target.value)}
-                    maxLength={40}
-                    autoComplete="nickname"
-                    hint="هذا الاسم يظهر في الموقع وقائمة حسابك."
-                  />
+                <form className="password-form" onSubmit={savePassword}>
+                  {canSignInWithPassword ? (
+                    <FormField
+                      label="كلمة المرور الحالية"
+                      type="password"
+                      icon="lock"
+                      autoComplete="current-password"
+                      value={currentPassword}
+                      onChange={(event) => setCurrentPassword(event.target.value)}
+                    />
+                  ) : null}
 
-                  <div className="profile-edit__grid">
-                    <div className="field">
-                      <label className="field__label" htmlFor="profile-country">
-                        الدولة
-                      </label>
-                      <Select
-                        id="profile-country"
-                        label="الدولة"
-                        options={COUNTRY_OPTIONS}
-                        value={details.country}
-                        onChange={(event) =>
-                          setDetails((current) => ({ ...current, country: event.target.value }))
-                        }
-                      />
-                    </div>
-                    <div className="field">
-                      <label className="field__label" htmlFor="profile-gender">
-                        الجنس
-                      </label>
-                      <Select
-                        id="profile-gender"
-                        label="الجنس"
-                        options={GENDER_OPTIONS}
-                        value={details.gender}
-                        onChange={(event) =>
-                          setDetails((current) => ({ ...current, gender: event.target.value }))
-                        }
-                      />
-                    </div>
+                  <div className="password-form__grid">
+                    <FormField
+                      label="كلمة المرور الجديدة"
+                      type="password"
+                      icon="lock"
+                      autoComplete="new-password"
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                    />
+                    <FormField
+                      label="تأكيد كلمة المرور"
+                      type="password"
+                      icon="lock"
+                      autoComplete="new-password"
+                      value={confirmPassword}
+                      onChange={(event) => setConfirmPassword(event.target.value)}
+                    />
                   </div>
+
+                  <PasswordChecklist value={newPassword} />
 
                   <div className="profile-edit__actions">
-                    <Button type="submit" iconLeft="check" loading={savingProfile}>
-                      حفظ التغييرات
+                    <Button type="submit" iconLeft="lock" loading={savingPassword}>
+                      {canSignInWithPassword ? 'حفظ كلمة المرور' : 'تعيين كلمة المرور'}
                     </Button>
                   </div>
-                </div>
-              </form>
-            </section>
+                </form>
+              </section>
+            ) : null}
 
-            {!verified ? (
+            {!emailVerified ? (
               <section className="panel verify-panel" aria-labelledby="verify-title">
                 <div className="verify-panel__head">
                   <span className="verify-panel__icon">
@@ -422,8 +514,7 @@ export default function Account() {
                       تحقق من بريدك الإلكتروني
                     </h2>
                     <p className="panel__text">
-                      أكّد بريدك للحصول على الشارة الذهبية وإكمال إعداد حسابك. يُفتح رابط التحقق على
-                      موقع MangaPlus مباشرة.
+                      أكّد بريدك لإكمال إعداد حسابك؛ بعد التأكيد يمكنك تعديل اسمك وصورتك من هنا.
                     </p>
                   </div>
                 </div>
@@ -443,67 +534,20 @@ export default function Account() {
               </section>
             ) : null}
 
-            <section className="panel" aria-labelledby="password-title">
-              <div className="panel__head">
-                <h2 className="panel__title panel__title--sm" id="password-title">
-                  {canSignInWithPassword ? 'كلمة المرور' : 'تعيين كلمة مرور'}
-                </h2>
-                <p className="panel__text">
-                  {canSignInWithPassword
-                    ? 'غيّر كلمة مرور حسابك. ستحتاج كلمة المرور الحالية لتأكيد التغيير.'
-                    : 'حسابك يعمل عبر Google. يمكنك إضافة كلمة مرور للدخول بالبريد نفسه على أي جهاز.'}
-                </p>
-              </div>
-
-              <form className="password-form" onSubmit={savePassword}>
-                {canSignInWithPassword ? (
-                  <FormField
-                    label="كلمة المرور الحالية"
-                    type="password"
-                    icon="lock"
-                    autoComplete="current-password"
-                    value={currentPassword}
-                    onChange={(event) => setCurrentPassword(event.target.value)}
-                  />
-                ) : null}
-
-                <div className="password-form__grid">
-                  <FormField
-                    label="كلمة المرور الجديدة"
-                    type="password"
-                    icon="lock"
-                    autoComplete="new-password"
-                    value={newPassword}
-                    onChange={(event) => setNewPassword(event.target.value)}
-                  />
-                  <FormField
-                    label="تأكيد كلمة المرور"
-                    type="password"
-                    icon="lock"
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={(event) => setConfirmPassword(event.target.value)}
-                  />
-                </div>
-
-                <PasswordChecklist value={newPassword} />
-
-                <div className="profile-edit__actions">
-                  <Button type="submit" iconLeft="lock" loading={savingPassword}>
-                    {canSignInWithPassword ? 'حفظ كلمة المرور' : 'تعيين كلمة المرور'}
-                  </Button>
-                </div>
-              </form>
-            </section>
-
             <section className="panel" aria-labelledby="details-title">
               <h2 className="panel__title panel__title--sm" id="details-title">
                 معلومات الحساب
               </h2>
               <dl className="info-list info-list--two">
                 <div>
-                  <dt>اسم المستخدم</dt>
+                  <dt>الاسم الظاهر</dt>
                   <dd className={verified ? 'name--gold' : ''}>{displayName}</dd>
+                </div>
+                <div>
+                  <dt>اسم المستخدم</dt>
+                  <dd dir="ltr">
+                    {profile?.username ? `@${profile.username}` : 'لم يُحدَّد بعد'}
+                  </dd>
                 </div>
                 <div>
                   <dt>البريد الإلكتروني</dt>
@@ -516,38 +560,39 @@ export default function Account() {
                       <span className="value--gold">
                         <Icon name="checkCircle" size={14} /> موثّق
                       </span>
+                    ) : emailVerified ? (
+                      'البريد مؤكّد'
                     ) : (
-                      'بانتظار التحقق'
+                      'بانتظار تأكيد البريد'
                     )}
                     {developer ? <span className="value--gold"> · مطوّر</span> : null}
                   </dd>
+                </div>
+                <div>
+                  <dt>الدولة</dt>
+                  <dd>{countryLabel(profile?.countryCode ?? '', profile?.countryName ?? '')}</dd>
+                </div>
+                <div>
+                  <dt>الجنس</dt>
+                  <dd>{genderLabel(profile?.gender ?? '')}</dd>
                 </div>
                 <div>
                   <dt>طريقة الدخول</dt>
                   <dd>{signInMethod}</dd>
                 </div>
                 <div>
-                  <dt>الدولة</dt>
-                  <dd>{optionLabel(COUNTRY_OPTIONS, details.country)}</dd>
-                </div>
-                <div>
-                  <dt>الجنس</dt>
-                  <dd>{optionLabel(GENDER_OPTIONS, details.gender)}</dd>
-                </div>
-                <div>
                   <dt>تاريخ الانضمام</dt>
-                  <dd>{safeDate(user.metadata.creationTime)}</dd>
+                  <dd>{safeDate(profile?.createdAt ?? user.metadata.creationTime)}</dd>
                 </div>
                 <div>
                   <dt>آخر تسجيل دخول</dt>
                   <dd>{safeDate(user.metadata.lastSignInTime)}</dd>
                 </div>
               </dl>
-              {localPhoto ? (
-                <p className="profile-card__hint">
-                  صورتك المختارة من الجهاز محفوظة في هذا المتصفح فقط.
-                </p>
-              ) : null}
+              <p className="profile-card__hint">
+                هذه البيانات محفوظة في حساب MangaPlus نفسه: الاسم والصورة تُعدَّل من هنا أو من
+                التطبيق، والدولة والجنس واسم المستخدم تُعدَّل من التطبيق وتظهر هنا مباشرة.
+              </p>
             </section>
 
             <section className="panel" aria-labelledby="settings-title">

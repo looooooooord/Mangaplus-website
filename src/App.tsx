@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ConfirmProvider } from '@/contexts/ConfirmContext';
 import { LibraryProvider } from '@/contexts/LibraryContext';
+import { ProfileProvider } from '@/contexts/ProfileContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -42,7 +43,8 @@ export default function App() {
         <ToastProvider>
           <ConfirmProvider>
             <AuthProvider>
-              <LibraryProvider>
+              <ProfileProvider>
+                <LibraryProvider>
                 <ScrollToTop />
                 <ErrorBoundary>
                   <Suspense fallback={<RouteSkeleton />}>
@@ -81,8 +83,8 @@ export default function App() {
                       <Route path="reader/novel/:id/:chapterId" element={<NovelReader />} />
                     </Routes>
                   </Suspense>
-                </ErrorBoundary>
-              </LibraryProvider>
+                </ErrorBoundary>                </LibraryProvider>
+              </ProfileProvider>
             </AuthProvider>
           </ConfirmProvider>
         </ToastProvider>

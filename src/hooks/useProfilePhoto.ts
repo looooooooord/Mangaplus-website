@@ -1,24 +1,12 @@
-import { useEffect, useState } from 'react';
 import type { User } from 'firebase/auth';
-import { getLocalPhoto, subscribeToLocalPhoto } from '@/services/profilePhoto';
+import { useProfile } from '@/contexts/ProfileContext';
 
 /**
- * Resolves the picture to show for an account: the one picked on this device
- * first, then the picture stored on the Firebase account (for example the
- * Google profile picture).
+ * الصورة المعروضة للحساب: الصورة المحفوظة في ملفه الشخصي المشترك مع التطبيق،
+ * ثم رابط الصورة، ثم صورة حساب Google إن وُجدت.
  */
 export function useProfilePhoto(user: User | null): string | null {
-  const uid = user?.uid ?? null;
-  const [localPhoto, setLocalPhoto] = useState<string | null>(() => (uid ? getLocalPhoto(uid) : null));
-
-  useEffect(() => {
-    if (!uid) {
-      setLocalPhoto(null);
-      return undefined;
-    }
-    setLocalPhoto(getLocalPhoto(uid));
-    return subscribeToLocalPhoto(() => setLocalPhoto(getLocalPhoto(uid)));
-  }, [uid]);
-
-  return localPhoto ?? user?.photoURL ?? null;
+  const { profile } = useProfile();
+  if (!user) return null;
+  return profile?.photoData || profile?.photoUrl || user.photoURL || null;
 }

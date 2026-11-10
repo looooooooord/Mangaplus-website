@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/contexts/ProfileContext';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { useProfilePhoto } from '@/hooks/useProfilePhoto';
 import { Avatar } from './Avatar';
@@ -26,6 +27,7 @@ const links = [
 
 export function MobileMenu({ open, onClose, onOpenSearch }: MobileMenuProps) {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const photoUrl = useProfilePhoto(user);
   const [term, setTerm] = useState('');
   const navigate = useNavigate();
@@ -72,9 +74,15 @@ export function MobileMenu({ open, onClose, onOpenSearch }: MobileMenuProps) {
 
         {user ? (
           <NavLink to="/account" className="drawer__account" onClick={onClose}>
-            <Avatar name={user.displayName} photoUrl={photoUrl} size="md" />
+            <Avatar
+              name={profile?.displayName?.trim() || user.displayName}
+              photoUrl={photoUrl}
+              size="md"
+            />
             <span className="drawer__account-body">
-              <span className="drawer__account-name">{user.displayName?.trim() || 'حسابي'}</span>
+              <span className="drawer__account-name">
+                {profile?.displayName?.trim() || user.displayName?.trim() || 'حسابي'}
+              </span>
               <span className="drawer__account-email" dir="ltr">
                 {user.email}
               </span>
